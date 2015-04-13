@@ -1,4 +1,4 @@
-#include "scloud.h"
+#include "tcp.h"
  
 
 
@@ -7,9 +7,9 @@ int main(void)
 
     User user = {"gatieme", "pan08917me", USER};
     
-    Client *client = CreateClient(&user, "127.0.0.1");
+    TcpClient *client = CreateTcpClient(&user, "127.0.0.1");
 
-    ClientPushFile(client, "./file/test");
+    TcpClientPushFile(client, "./file/test");
 
 
     return 0;  

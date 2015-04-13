@@ -7,16 +7,15 @@
 
 
 
-
-#include "scloud.h"
+#include "tcp.h"
 
 /*  按照user的信息初始化客户端  */
-Client* CreateClient(User *user, char *serverAddr)
+TcpClient* CreateTcpClient(User *user, char *serverAddr)
 {
-    Client *client = NULL;
+    TcpClient *client = NULL;
     
     /*  首先创建一个客户端结构  */
-    if((client  = (Client *)malloc(sizeof(Client))) == NULL)
+    if((client  = (TcpClient *)malloc(sizeof(TcpClient))) == NULL)
     {
         fprintf(stderr, "malloc client error...\n");    
     }
@@ -32,7 +31,7 @@ Client* CreateClient(User *user, char *serverAddr)
     client->m_serverAddr.sin_family     =   AF_INET;                      /*  internet协议族  */  
     strcpy(client->m_serverIp, serverAddr);                 /*  保存服务器IP  */
     client->m_serverAddr.sin_addr.s_addr  =   inet_addr(serverAddr);     /*  设置所连接服务器的IP */
-    client->m_serverAddr.sin_port         =   htons(SERVER_PORT);               /*  设置连接的服务器端口*/
+    client->m_serverAddr.sin_port         =   htons(TCP_SERVER_PORT);               /*  设置连接的服务器端口*/
     
     /* 开始创建套接字  */
     client->m_socketFd                   =   socket(AF_INET,SOCK_STREAM,0);  
@@ -44,17 +43,22 @@ Client* CreateClient(User *user, char *serverAddr)
     }  
     
     /*  尝试连接服务器  */
-    if(connect(client->m_socketFd,(struct sockaddr*)&client->m_serverAddr,sizeof(client->m_serverAddr)) < 0)  
+    if(connect(client->m_socketFd, (struct sockaddr*)&client->m_serverAddr,sizeof(client->m_serverAddr)) < 0)  
     {
         printf("Can Not Connect To %s\n", client->m_serverIp);  
         exit(1);  
     }
+    else
+    {
+        printf("连接服务器成功...\n");
+    }
+
 
     return client;
 }
 
 /*  销毁客户端的信息  */
-void DestroyClient(Client *client)
+void DestroyTcpClient(TcpClient *client)
 {
     if(client != NULL)
     {
@@ -67,31 +71,52 @@ void DestroyClient(Client *client)
 
 
 /* 客户端将文件上传到服务器上 */
-void ClientPushFile(Client *client, char *filePath)
+void TcpClientPushFile(TcpClient *client, char *filePath)
 {
     FILE    *stream;
     char    buffer[BUFFER_SIZE];
+    char    filename[MAX_FILENAME_SIZE];
+    int     count = 0;  
     
-    int len = 0;  
+    /* 先将文件名发送给服务器 
+     * 2015-4-13 21:38 Modify
+     * 发送文件名时只需要发送filePath最后的文件名filename就可以了
+     * */
+    bzero(buffer, BUFFER_SIZE);  
+    strcpy(filename, strrchr(filePath, '/') + 1);
+    strncpy(buffer, filename, strlen(filename) > MAX_FILENAME_SIZE ? MAX_FILENAME_SIZE : strlen(filename)); 
+    count = send(client->m_socketFd, buffer, BUFFER_SIZE, 0);  
+    printf(" 客户端待上传待文件名[%s]..\n", filename);
+
     
+    if(count < 0)
+    {
+        perror("Send file information");  
+        exit(1);  
+    }
 
     /*  打开文件流  */
     if((stream = fopen(filePath, "r")) == NULL)  
     {  
         printf("Can't open the file [%s]\n", filePath);  
         exit(1);  
-    }  
+    }
+    else
+    {
+        printf("客户端打开文件成功\n");
+    }
 
-    printf("正在传输...\n");  
-    len = 0;  
+    printf("正在向服务器传上传文件...\n");  
+    count = 0;  
     
     /*  清空缓冲区  */
-    bzero(buffer,BUFFER_SIZE);  
+    bzero(buffer, BUFFER_SIZE);  
+
     /*  不断读取并发送数据  */ 
-    while((len = fread(buffer, 1, BUFFER_SIZE, stream)) > 0)  
+    while((count = fread(buffer, 1, BUFFER_SIZE, stream)) > 0)  
     {  
-        // printf("len=%d\n",len);  
-        if(send(client->m_socketFd, buffer, len, 0) < 0)  
+        // printf("count =%d\n", count);  
+        if(send(client->m_socketFd, buffer, count, 0) < 0)  
         {  
             printf("send file error...\n");  
             break;  
@@ -100,12 +125,18 @@ void ClientPushFile(Client *client, char *filePath)
         bzero(buffer, BUFFER_SIZE);  /*  再次将缓冲区清空  */  
     }  
     
+    printf("向服务器发送文件成功...\n");
+
     /* 传送完毕后， 关闭文件流  */
     if(fclose(stream))  
     {  
         printf("file close error\n");  
         exit(1);  
-    }  
+    }
+    else
+    {
+        printf("关闭文件流成功...\n");
+    }
    
 
     /*  关闭与服务器通讯的套接字  */
@@ -113,8 +144,8 @@ void ClientPushFile(Client *client, char *filePath)
     
 }  
 
-/* 接受服务器发送回来的数据  */
-void ClientPullFile(Client *client)
+/* 从服务器上下载文件  */
+void TcpClientPullFile(TcpClient *client)
 {
     char    buff[BUFFER_SIZE];  
     char    filename[MAX_FILENAME_SIZE];  
@@ -128,7 +159,7 @@ void ClientPullFile(Client *client)
     
     if(count < 0)  
     {  
-        perror("活取文件名失败...\n");  
+        perror("获取文件名失败...\n");  
         exit(1);  
     }  
     

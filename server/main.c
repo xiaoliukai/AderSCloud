@@ -5,13 +5,13 @@
     > Created Time: 2015年04月11日 星期六 18时02分26秒
  ************************************************************************/
 
-#include "scloud.h"
+#include "tcp.h"
 
 int main(void)
 {
-    Server *server = CreateServer( );           /*  创建客户端  */
+    TcpServer *server = CreateTcpServer( );           /*  创建客户端  */
 
-    ServerRun(server);
+    TcpServerRun(server);
     
 
 

@@ -1,4 +1,4 @@
-DIRS = lib
+DIRS = server client
 
 all:
 	for i in $(DIRS); do \

@@ -28,8 +28,8 @@ TcpServer* CreateTcpServer( )
     server->m_serverAddr.sin_port           =   htons(TCP_SERVER_PORT);  
     
     /*  创建套接字  */
-    server->m_serverSocket = socket(AF_INET, SOCK_STREAM, 0);  
-    if(server->m_serverSocket < 0)   
+    server->m_socketFd = socket(AF_INET, SOCK_STREAM, 0);  
+    if(server->m_socketFd < 0)   
     {
         perror("socket create error\n");  
         exit(1);  
@@ -41,7 +41,7 @@ TcpServer* CreateTcpServer( )
     }
     
     /*  绑定端口  */  
-    if(bind(server->m_serverSocket, (struct sockaddr*)&server->m_serverAddr, sizeof(server->m_serverAddr)))  
+    if(bind(server->m_socketFd, (struct sockaddr*)&server->m_serverAddr, sizeof(server->m_serverAddr)))  
      {        
         perror("bind error\n");  
         exit(1);  
@@ -53,7 +53,7 @@ TcpServer* CreateTcpServer( )
     }
 
     /*  开始监听绑定的端口  */
-    if(listen(server->m_serverSocket,LISTEN_QUEUE))  
+    if(listen(server->m_socketFd,LISTEN_QUEUE))  
     {
         printf("Server listen error...\n");  
         exit(1); 
@@ -73,7 +73,7 @@ void DestroyTcpServer(TcpServer *server)
     if(server != NULL)
     {
 
-        close(server->m_serverSocket);
+        close(server->m_socketFd);
         free(server);
     }
 }
@@ -280,7 +280,7 @@ void TcpServerRun(TcpServer *server)
         socklen_t length = sizeof(clientAddr);  
      
         /* accept返回一个新的套接字与客户端进行通信  */
-        int connfd = accept(server->m_serverSocket, (struct sockaddr*)&clientAddr, &length);  
+        int connfd = accept(server->m_socketFd, (struct sockaddr*)&clientAddr, &length);  
     
         if(connfd == -1)  
         {  

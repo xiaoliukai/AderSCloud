@@ -1,4 +1,4 @@
-DIRS = server client
+DIRS = server client  tcp udp
 
 all:
 	for i in $(DIRS); do \

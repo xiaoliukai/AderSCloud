@@ -19,61 +19,18 @@
 #include <stdbool.h>        // BOOL类型
 #include <malloc.h>         // 堆空间处理
 #include <time.h>
-/////////////////////////////////////////////////////////////////////////////////////////
-//
-//
-//
-//
-//////////////////////////////////////////////////////////////////////////////////////////
-#define SYS_WINDOWS_DEF
 
-#ifdef SYS_WINDOWS_DEF
-#
-    #define SYS_WIN32_DEF            // 32位Windows操作系统
-    //#define SYS_WIN64_DEFINE            // 64位Windows操作系统
+#include <netinet/in.h>  
+#include <sys/types.h>  
+#include <sys/socket.h>  
+#include <sys/wait.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <signal.h>
 
-    #if define      SYS_WIN32_DEF
-    #
-    #
-/////////////////////////////////////////////////////////////////////////////////////////////
-        #define	WCHAR		 USHORT                                            //宽字符类型//
-        #define CHAR_SIZE         1                                            // 字符类型 //
-        #define SHORT_SIZE        2                                            // 短整型   //
-        #define INT_SIZE          4                                            //   整型   //
-        #define LONG_SIZE         4                                            //  长整型  //
-        #define LONG_LONG_SIZE    4                                            // 长长整型 //
-        #define FLOAT_SIZE        4                                            //  浮点数  //
-        #define DOUBLE_SIZE       8                                            // 双精度数 //
-        #define LONG_DOUBLE_SIZE  8                                            //长双精度数//
-/////////////////////////////////////////////////////////////////////////////////////////////
-    #
-    #
-    #
-    #
-    #elifdef   SYS_WIN64_DEFINE
-    #
-    #
-//////////////////////////////////////////////////////////////////////////////////////////
-        #define WCHAR		   ULONG                                            //宽字符类型//
-        #define CHAR_SIZE          1                                            // 字符类型 //
-        #define SHORT_SIZE         4                                            // 短整型   //
-        #define INT_SIZE           8                                            //   整型   //
-        #define LONG_SIZE          8                                            //  长整型  //
-        #define LONG_LONG_SIZE     8                                            // 长长整型 //
-        #define FLOAT_SIZE         8                                            //  浮点数  //
-        #define DOUBLE_SIZE       16                                            // 双精度数 //
-        #define LONG_DOUBLE_SIZE  16                                            //长双精度数//
-//////////////////////////////////////////////////////////////////////////////////////////
-    #
-    #
-    #
-    #
-    #endif
-#
-#
-#
-#
-#endif
+
+
+
 
 ///CTools宏函数信息
 ///////////////////////////////////////////////////////////////////////////////////////////

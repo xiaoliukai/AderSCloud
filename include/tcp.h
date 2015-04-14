@@ -2,20 +2,7 @@
 #define  TCP_H_INCLUDE
 
 
-#include <stdio.h>  
-#include <stdlib.h>  
-#include <time.h>  
-#include <string.h> 
-
-#include <netinet/in.h>  
-#include <sys/types.h>  
-#include <sys/socket.h>  
-#include <sys/wait.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <signal.h>
-
-
+#include "config.h"
 #include "user.h"
 
 
@@ -67,7 +54,7 @@ typedef struct SCloudTcpServer
     /*  套接字信息  */
     struct sockaddr_in  m_serverAddr;        /*  服务器套接字地址  */
     struct sockaddr_in  m_clientAddr;        /*  客户端套接字地址  */
-    int                 m_serverSocket;      /*  套接字信息  */
+    int                 m_socketFd;      /*  套接字信息  */
     
 }TcpServer;
 

@@ -9,10 +9,10 @@ include $(ROOT)/Makefile.defines
 
 
 # 所有的文件
-PROGS =	server
+PROGS =	tcpserver
 
 #  所有的目标文件OBJS
-OBJS = server.o main.o 
+OBJS = tcpserver.o main.o 
 
 
 # 构建操作

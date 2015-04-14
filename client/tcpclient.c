@@ -86,7 +86,7 @@ void TcpClientPushFile(TcpClient *client, char *filePath)
     strcpy(filename, strrchr(filePath, '/') + 1);
     strncpy(buffer, filename, strlen(filename) > MAX_FILENAME_SIZE ? MAX_FILENAME_SIZE : strlen(filename)); 
     count = send(client->m_socketFd, buffer, BUFFER_SIZE, 0);  
-    printf(" 客户端待上传待文件名[%s]..\n", filename);
+    printf("客户端待上传待文件名[%s]..\n", filename);
 
     
     if(count < 0)
@@ -140,16 +140,18 @@ void TcpClientPushFile(TcpClient *client, char *filePath)
    
 
     /*  关闭与服务器通讯的套接字  */
-    close(client->m_socketFd);  
-    
-}  
+    close(client->m_socketFd);   
+}
+
+
+
 
 /* 从服务器上下载文件  */
-void TcpClientPullFile(TcpClient *client)
+void TcpClientPullFile(TcpClient *client, char *filePath)
 {
     char    buff[BUFFER_SIZE];  
     char    filename[MAX_FILENAME_SIZE];  
-    int     count, writeLength, dataLength;  
+    int     count, writeLength, dataLength; 
     FILE    *stream;
     bzero(buff,BUFFER_SIZE);  
   

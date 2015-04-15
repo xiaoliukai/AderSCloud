@@ -64,5 +64,6 @@ TcpServer* CreateTcpServer( );
 /*  销毁服务器  */
 void DestroyTcpServer(TcpServer *tcpServer);
 
-
+/*  服务器运行函数  */
+void TcpServerRun(TcpServer *server);
 #endif      // #define __SCLOUD_H__

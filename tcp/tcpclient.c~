@@ -170,7 +170,7 @@ void TcpClientPullFile(TcpClient *client, char *filePath)
   
     /*  开始接收文件  */
     printf("Preparing download file : %s from %s \n", filename, client->m_serverIp);   
-    printf("准备下载来自服务器%s的文件%s...\n", client->m_serverIp, filename);
+    printf("准备下载来自服务器%s的文件%s...\n", filename, client->m_serverIp);
 
     /*  打开文件流  */  
     if((stream = fopen(filename,"wb+")) == NULL)  

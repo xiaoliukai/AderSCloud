@@ -5,13 +5,13 @@
     > Created Time: 2015年04月11日 星期六 18时02分26秒
  ************************************************************************/
 
-#include "tcp.h"
+#include "udp.h"
 
 int main(void)
 {
-    TcpServer *server = CreateTcpServer( );           /*  创建客户端  */
+    UdpServer *server = CreateUdpServer( );           /*  创建客户端  */
 
-    TcpServerRun(server);
+    UdpServerRun(server);
     
 
 

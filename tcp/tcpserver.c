@@ -41,11 +41,11 @@ TcpServer* CreateTcpServer( )
     }
     
     /*  绑定端口  */  
-    if(bind(server->m_socketFd, (struct sockaddr*)&server->m_serverAddr, sizeof(server->m_serverAddr)))  
-     {        
+    if(bind(server->m_socketFd, (struct sockaddr*)&server->m_serverAddr, sizeof(server->m_serverAddr)) > 0)  
+    {        
         perror("bind error\n");  
         exit(1);  
-     }
+    }
     else
     {
         printf("server bind port %d success...\n", TCP_SERVER_PORT);

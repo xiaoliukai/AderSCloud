@@ -95,14 +95,14 @@ typedef enum UdpServerMsgType
 
     RECOV_DIR_SUCCESS   =   22,     /*  用户删除文件成功  */ 
     RECOV_DIR_FAILED    =   23,     /*  用户删除文件失败  */
-};
+}UdpServerMsgType;
 
 typedef struct SCloudUdpClient
 {
     /*  套接字信息  */
     struct sockaddr_in  m_serverAddr;        /*  服务器套接字地址  */
     struct sockaddr_in  m_clientAddr;        /*  客户端套接字地址  */
-    int                 m_socketfd;          /*  套接字信息  */
+    int                 m_socketFd;          /*  套接字信息  */
     char                m_serverIp[IP_SIZE];          /*  服务器Ip*/ 
     /*  用户信息  */
     User                m_user;              /*  用户名 */
@@ -110,10 +110,14 @@ typedef struct SCloudUdpClient
 }UdpClient;
 
 /*  按照user的信息初始化客户端  */
-UdpClient* CreateClient(User *user, char *serverIp);
+UdpClient* CreateUdpClient(User *user, char *serverIp);
 
 /*  销毁客户端的信息  */
 void DestroyUdpClient(UdpClient *client);
+
+
+/*  客户端运行程序  */
+void UdpClientRun(UdpClient *client);
 
 /***********
  *  服务器信息
@@ -124,8 +128,7 @@ typedef struct SCloudUdpServer
 {
     /*  套接字信息  */
     struct sockaddr_in  m_serverAddr;        /*  服务器套接字地址  */
-    struct sockaddr_in  m_clientAddr;        /*  客户端套接字地址  */
-    int                 m_serverSocket;      /*  套接字信息  */
+    int                 m_socketFd;      /*  套接字信息  */
     
 }UdpServer;
 
@@ -136,7 +139,8 @@ UdpServer* CreateUdpServer( );
 void DestroyUdpServer(UdpServer *server);
 
 
-
+/*  客户端运行程序  */
+void UdpServerRun(UdpServer *server);
 
 
 #endif          /*  #ifndef UDP_H_INCLUDE  */

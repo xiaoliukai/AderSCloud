@@ -1,4 +1,4 @@
-#include "tcp.h"
+#include "udp.h"
  
 
 
@@ -7,10 +7,9 @@ int main(void)
 
     User user = {"gatieme", "pan08917me", USER};
     
-    TcpClient *client = CreateTcpClient(&user, "127.0.0.1");
+    UdpClient *client = CreateUdpClient(&user, "127.0.0.1");
 
-    TcpClientPushFile(client, "./file/test");
-
+    UdpClientRun(client);
 
     return 0;  
 }  

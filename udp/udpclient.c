@@ -7,34 +7,35 @@
 
 
 
-#include "tcp.h"
+#include "udp.h"
 
 /*  按照user的信息初始化客户端  */
-TcpClient* CreateTcpClient(User *user, char *serverAddr)
+UdpClient* CreateUdpClient(User *user, char *serverAddr)
 {
-    TcpClient *client = NULL;
+    UdpClient *client = NULL;
     
     /*  首先创建一个客户端结构  */
-    if((client  = (TcpClient *)malloc(sizeof(TcpClient))) == NULL)
+    if((client  = (UdpClient *)malloc(sizeof(UdpClient))) == NULL)
     {
         fprintf(stderr, "malloc client error...\n");    
     }
 
-    /* 复制用户信息  */
+    /*  复制用户信息  */
     strcpy(user->m_name, user->m_name);     /*  用户名  */
     strcpy(user->m_pwd,  user->m_pwd);      /*  密码  */
     user->m_type = user->m_type;     /*  用户类型  */
     
-    /*  */
+    /*  服务器的地址  */
     bzero(&client->m_serverAddr, sizeof(client->m_serverAddr));   /*  全部置零  */ 
     
     client->m_serverAddr.sin_family     =   AF_INET;                      /*  internet协议族  */  
     strcpy(client->m_serverIp, serverAddr);                 /*  保存服务器IP  */
     client->m_serverAddr.sin_addr.s_addr  =   inet_addr(serverAddr);     /*  设置所连接服务器的IP */
-    client->m_serverAddr.sin_port         =   htons(TCP_SERVER_PORT);               /*  设置连接的服务器端口*/
+    client->m_serverAddr.sin_port         =   htons(UDP_SERVER_PORT);               /*  设置连接的服务器端口*/
     
-    /* 开始创建套接字  */
-    client->m_socketFd                   =   socket(AF_INET,SOCK_STREAM,0);  
+    /*  开始创建套接字  */
+    /*  IPV4  SOCK_DGRAM 数据报套接字（UDP协议）  */
+    client->m_socketFd                   =   socket(AF_INET, SOCK_DGRAM, 0);  
 
     if(client->m_socketFd < 0)  
     {
@@ -58,7 +59,7 @@ TcpClient* CreateTcpClient(User *user, char *serverAddr)
 }
 
 /*  销毁客户端的信息  */
-void DestroyTcpClient(TcpClient *client)
+void DestroyUdpClient(UdpClient *client)
 {
     if(client != NULL)
     {
@@ -69,141 +70,59 @@ void DestroyTcpClient(TcpClient *client)
     }
 }
 
-
-/* 客户端将文件上传到服务器上 */
-void TcpClientPushFile(TcpClient *client, char *filePath)
+/*  客户端向服务器发送数据  */
+void UdpClientSendMessage(UdpClient *client)
 {
-    FILE    *stream;
-    char    buffer[BUFFER_SIZE];
-    char    filename[MAX_FILENAME_SIZE];
-    int     count = 0;  
-    
-    /* 先将文件名发送给服务器 
-     * 2015-4-13 21:38 Modify
-     * 发送文件名时只需要发送filePath最后的文件名filename就可以了
-     * */
-    bzero(buffer, BUFFER_SIZE);  
-    strcpy(filename, strrchr(filePath, '/') + 1);
-    strncpy(buffer, filename, strlen(filename) > MAX_FILENAME_SIZE ? MAX_FILENAME_SIZE : strlen(filename)); 
-    count = send(client->m_socketFd, buffer, BUFFER_SIZE, 0);  
-    printf("客户端待上传待文件名[%s]..\n", filename);
 
-    
-    if(count < 0)
-    {
-        perror("Send file information");  
-        exit(1);  
-    }
 
-    /*  打开文件流  */
-    if((stream = fopen(filePath, "r")) == NULL)  
-    {  
-        printf("Can't open the file [%s]\n", filePath);  
-        exit(1);  
-    }
-    else
-    {
-        printf("客户端打开文件成功\n");
-    }
-
-    printf("正在向服务器传上传文件...\n");  
-    count = 0;  
-    
-    /*  清空缓冲区  */
-    bzero(buffer, BUFFER_SIZE);  
-
-    /*  不断读取并发送数据  */ 
-    while((count = fread(buffer, 1, BUFFER_SIZE, stream)) > 0)  
-    {  
-        // printf("count =%d\n", count);  
-        if(send(client->m_socketFd, buffer, count, 0) < 0)  
-        {  
-            printf("send file error...\n");  
-            break;  
-        }  
-
-        bzero(buffer, BUFFER_SIZE);  /*  再次将缓冲区清空  */  
-    }  
-    
-    printf("向服务器发送文件成功...\n");
-
-    /* 传送完毕后， 关闭文件流  */
-    if(fclose(stream))  
-    {  
-        printf("file close error\n");  
-        exit(1);  
-    }
-    else
-    {
-        printf("关闭文件流成功...\n");
-    }
-   
-
-    /*  关闭与服务器通讯的套接字  */
-    close(client->m_socketFd);   
 }
 
 
-
-
-/* 从服务器上下载文件  */
-void TcpClientPullFile(TcpClient *client, char *filePath)
+void UdpClientRun(UdpClient *client)
 {
-    char    buff[BUFFER_SIZE];  
-    char    filename[MAX_FILENAME_SIZE];  
-    int     count, writeLength, dataLength; 
-    FILE    *stream;
-    bzero(buff,BUFFER_SIZE);  
-  
-
-    /*  首先获取服务器发送过来的文件名  */
-    count = recv(client->m_socketFd, buff, BUFFER_SIZE, 0);  
+    int     len;
+    char    buffer[BUFFER_SIZE] = "HELLO_WORLD";            
     
-    if(count < 0)  
+    //C2向C1不停地发出数据包，得到C1的回应，与C1建立连接  
+    while (1)
     {  
-        perror("获取文件名失败...\n");  
-        exit(1);  
-    }  
-    
-    strncpy(filename, buff, strlen(buff) > MAX_FILENAME_SIZE ? MAX_FILENAME_SIZE : strlen(buff));  
-  
-    /*  开始接收文件  */
-    printf("Preparing download file : %s from %s \n", filename, client->m_serverIp);   
-    printf("准备下载来自服务器%s的文件%s...\n", filename, client->m_serverIp);
+/*
+ *  sendto和recvfrom一般用于UDP协议中,但是如果在TCP中connect函数调用后也可以用.
+ *  sendto（）和recvfrom（）——利用数据报方式进行数据传输  
+ *  在无连接的数据报socket方式下，由于本地socket并没有与远端机器建立连接，
+ *  所以在发送数据时应指明目的地址，sendto（）函数原型为：  
+ *
+ *  int PASCAL FAR sendto(   SOCKET s, 
+ *                          const char FAR* buf, 
+ *                          int len, 
+ *                          int flags,
+ *                          const struct sockaddr FAR* to,
+ *                          int tolen);　　 
+ *  参数说明:
+ *  s：一个标识套接口的描述字。　 
+ *  buf：包含待发送数据的缓冲区。　　 
+ *  len：buf缓冲区中数据的长度。　 
+ *  flags：调用方式标志位。　　 
+ *  to：（可选）指针，指向目的套接口的地址。　 
+ *  tolen：to所指地址的长度。   
+ * */  
+        /*  客户端向服务器发送数据包 */  
+        len = sendto(client->m_socketFd, buffer, BUFFER_SIZE, 0, (struct sockaddr*)&client->m_serverAddr, sizeof(client->m_serverAddr));
 
-    /*  打开文件流  */  
-    if((stream = fopen(filename,"wb+")) == NULL)  
-    {
-        perror("create file %s error...\n");  
-        perror("创建文件失败...\n");
-        exit(1);  
+        if (len < 0)
+        {  
+
+            printf("sendto server failed...\n");
+            printf("向服务器发送数据失败...\n");
+            exit(-1);  
+        }
+        else 
+        {
+            printf("successfully send package\n");  
+            printf("UDP客户端向服务器发送数据成功...\n");
+        } 
+
+        sleep(1000);
+      
     }
-
-    bzero(buff, BUFFER_SIZE);          /*  清空缓冲区  */  
-    dataLength = 0;  
-    while((dataLength = recv(client->m_socketFd, buff, BUFFER_SIZE, 0)) != 0)   
-    {  
-        if(dataLength < 0)  /* 如果接收文件失败  */ 
-        {  
-            perror("download error...\n");  
-            perror("下载文件失败...\n");
-            exit(1);  
-        }  
-
-
-        /*  将接收到的文件数据写入文件中  */
-        writeLength = fwrite(buff, sizeof(char), dataLength, stream);     
-        if(writeLength < dataLength)   /*  如果写入的数据比实际接收到的数据少  */  
-        {  
-            perror("file write error...\n");
-            perror("写入文件失败...\n");
-            exit(1);  
-        }  
-        
-        bzero(buff,BUFFER_SIZE);               /* 清空缓冲区  */
-    }  
-    printf("下载来自服务器%s的文件%s成功\n", filename, client->m_serverIp);
-    printf("Receieved file:%s from %s finished!\n",filename, client->m_serverIp);  
-    
-    fclose(stream);             /*  关闭文件流 */
 }
